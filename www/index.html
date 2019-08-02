@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <script src="components/loader.js"></script>
+    <link rel="stylesheet" href="components/loader.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/cssua.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+      var apikey = 'fa607a7dcf774721eb9ac442d181ab5fa59f80282126a5ef757c5f124ab00322';
+      var clientkey = '834ecb05239527d7dc0ff51f41536359a81a05aaa1b31b6da7471bc1995e593a';
+      var ncmb = new NCMB(apikey, clientkey);
+      var List = ncmb.DataStore("list");
+      var list = new List();
+
+      var today = new Date();
+      // 年月の指定
+      var year = today.getFullYear();
+      var month = today.getMonth()+1;
+ 
+      window.onload = function() {
+        var data = generate_month_calendar(year, month);
+        document.getElementById('calendar').appendChild(data);
+        calendar.style.fontSize = 123 + '%';
+      }
+ 
+      /**
+      * 指定した年月のカレンダー要素を生成して返す
+      * @param {number} year  - 年の指定
+      * @param {number} month - 月の指定
+      */
+      function generate_month_calendar(year, month) {
+        var weekdayData = ['日　', '月　', '火　', '水　', '木　', '金　', '土　'];
+        // カレンダーの情報を取得
+        var calendarData = get_month_calendar(year, month);
+        var i = calendarData[0]['weekday']; // 初日の曜日を取得
+        // カレンダー上の初日より前を埋める
+        while(i > 0) {
+          i--;
+          calendarData.unshift({
+            day: '　',
+            weekday: i
+          });
+        }
+        var i = calendarData[calendarData.length - 1]['weekday']; // 末日の曜日を取得
+        // カレンダー上の末日より後を埋める
+        while(i < 6) {
+          i++;
+          calendarData.push({
+            day: '',
+            weekday: i
+          });
+        }
+ 
+        // カレンダーの要素を生成
+        var cTable = document.createElement('table');
+        cTable.className = 'calendar-table';
+ 
+        var insertData = '';
+        // 曜日部分の生成
+        insertData += '<thead>';
+        insertData += '<tr>';
+        for (var i = 0; i < weekdayData.length; i++) {
+          insertData += '<th>';
+          insertData += weekdayData[i];
+          insertData += '</th>';
+        }
+        insertData += '</tr>';
+        insertData += '</thead>';
+ 
+        // 日付部分の生成
+        insertData += '<tbody>';
+        for (var i = 0; i < calendarData.length; i++) {
+          if(calendarData[i]['weekday'] <= 0) {
+            insertData += '<tr>';
+          }
+          insertData += '<td>';
+          insertData += calendarData[i]['day'];
+          insertData += '</td>';
+          if(calendarData[i]['weekday'] >= 6) {
+            insertData += '</tr>';
+          }
+        }
+        insertData += '</tbody>';
+        cTable.innerHTML = insertData;
+        return cTable;
+    }
+    /**
+    * 指定した年月のカレンダー情報を返す
+    * @param {number} year  - 年の指定
+    * @param {number} month - 月の指定
+    */
+    function get_month_calendar(year, month) {
+      var firstDate = new Date(year, (month - 1), 1); // 指定した年月の初日の情報
+      var lastDay = new Date(year, (firstDate.getMonth() + 1), 0).getDate(); // 指定した年月の末日
+      var weekday = firstDate.getDay(); // 指定した年月の初日の曜日
+      var calendarData = []; // カレンダーの情報を格納
+      var weekdayCount = weekday; // 曜日のカウント用
+      for (var i = 0; i < lastDay; i++) {
+        calendarData[i] = {
+          day: i + 1 + "  　",
+          weekday: weekdayCount
+        }
+        // 曜日のカウントが6(土曜日)まできたら0(日曜日)に戻す
+        if(weekdayCount >= 6) {
+          weekdayCount = 0;
+        } else {
+          weekdayCount++;
+        }
+      }
+      return calendarData;
+    }
+    </script>
+</head>
+<body>
+  <div data-role="page" id="main-page">
+    <div data-role="header" data-position="fixed" data-theme="c">
+      <h1>メイン</h1>
+      <a href="#detail-page" class="ui-btn-left">仮目標詳細へ</a>
+    </div>
+    <!-- 送る部分 -->
+    <div data-role="content">
+      <ul data-role="listview" data-inset="true" id="todo-list2"></ul>
+    </div>
+    <div data-role="list-page">
+      <input id="main-button" type="button" value="目標一覧画面へ" onclick="addTodo()">
+    </div>
+    <div data-role="add-page">
+      <input id="main-button" type="button" value="目標登録画面へ" onclick="listTodo()">
+    </div>
+  </div>
+    
+  <div data-role="page" id="list-page">
+    <div data-role="header" data-position="fixed" data-theme="c">
+      <h1>目標一覧</h1>
+      <a href="#main-page" data-icon="back" class="ui-btn-left">戻る</a>
+    </div>
+    <div data-role="content">
+      <ul data-role="listview" data-inset="true" id="todo-list"></ul>
+    </div>
+    <script>
+      //document.getElementById("add").onclick = function() {
+        //$.mobile.changePage($("#main-page"));
+      //}
+
+      //$("#add").click(function() {
+        //alert("クリック！");
+      //});
+    </script>
+
+  </div>
+  
+  <div data-role="page" id="add-page">
+    <div data-role="header" data-position="fixed" data-theme="c">
+      <h1>目標登録</h1>
+      <a href="#main-page" data-icon="back" class="ui-btn-left">戻る</a>
+    </div>
+    <div data-role="main-page">
+      <input id="todo-title" type="text" placeholder="目標名を入力してください">
+      <textarea id="todo-body" style="height: 8em" placeholder="目標の詳細を入力してください"></textarea>
+      
+      <input id="add-button" type="button" value="共有" onclick="shareTodo()">
+    </div>
+  </div>
+
+  <div data-role="page" id="detail-page">
+
+    <h2 id="tit">タイトル</h2>
+    <h3 id="bod">詳細</h3>
+
+   
+    <script>
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = today.getMonth()+1;
+      document.write(year + "年" + month + "月")
+    </script>
+
+    <div id="calendar" > </div>
+    <!--<canvas id="calendar"></canvas>-->
+    <form name="form">
+      <img id="good" src="image/handicon.png" width="50" height="50">
+      <input type="button" value="目標達成" name="paint_">
+      <br>
+    </form>
+    <div data-role="header" data-position="fixed" data-theme="c">
+      <h1>目標詳細</h1>
+      <a href="#main-page" data-icon="back" class="ui-btn-left">戻る</a>
+    </div>
+  </div>
+</body>
+</html>
